@@ -37,14 +37,15 @@ jobs:
           export KBUILD_BUILD_HOST="workspace"
           export PATH=$GITHUB_WORKSPACE/clang/bin:${PATH}
 
+          # LLVM-ready args only, no GCC CROSS_COMPILE
           args="ARCH=arm64 \
                 O=../out \
                 ${{ env.BUILD_ARGS }} \
                 CC=clang \
                 LD=ld.lld \
                 CLANG_TRIPLE=aarch64-linux-gnu- \
-                CROSS_COMPILE=${GITHUB_WORKSPACE}/aarch64-linux-android-4.9/bin/aarch64-linux-android- \
-                CROSS_COMPILE_ARM32=${GITHUB_WORKSPACE}/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-"
+                CROSS_COMPILE= \
+                CROSS_COMPILE_ARM32="
 
           cd kernel-source
           git submodule update --init --recursive
