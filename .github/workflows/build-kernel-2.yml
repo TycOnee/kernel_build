@@ -1,14 +1,15 @@
-name: Build MikaKernel 2
+name: Build Star KSU
+
 
 on:
   workflow_dispatch:
 
+
 jobs:
   build-kernel:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup environment
         run: |
           echo "ANYKERNEL_SOURCE=$(cat config.env | grep -w "ANYKERNEL_SOURCE" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
@@ -17,10 +18,7 @@ jobs:
           echo "KERNEL_SOURCE_BRANCH=$(cat config.env | grep -w "KERNEL_SOURCE_BRANCH" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "KERNEL_CONFIG=$(cat config.env | grep -w "KERNEL_CONFIG" | head -n 1 | cut -d "=" -f 2)" >> $GITHUB_ENV
           echo "BUILD_ARGS=$(cat config.env | grep -w "BUILD_ARGS" | head -n 1 | cut -d ":" -f 2)" >> $GITHUB_ENV
-          
-      - name: Install dependencies
-        run: sudo apt update && sudo apt-get install git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev libbz2-1.0 libghc-bzlib-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom libxml-sax-base-perl libxml-simple-perl bc libc6-dev-i386 libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler python2 python3
-        
+
       - name: Pull toolchain
         run: |
           git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 aarch64-linux-android-4.9
@@ -30,34 +28,43 @@ jobs:
       - name: Pull kernel source
         run: |
           git clone --depth=1 ${{ env.KERNEL_SOURCE }} -b ${{ env.KERNEL_SOURCE_BRANCH }} kernel-source
-          
-      - name: Patch kernel source (fix printf)
-        run: |
-          sed -i 's/printf(/printk(KERN_INFO /g' kernel-source/kernel/async.c
-
-      - name: Setup KernelSU
-        run: |
-          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 
       - name: Build kernel
         run: |
-          export KBUILD_BUILD_USER="zclkkk"
-          export KBUILD_BUILD_HOST="workspace"
+          export KBUILD_BUILD_USER="TycOnee"
+          export KBUILD_BUILD_HOST="PhoeniXLab"
           export PATH=$GITHUB_WORKSPACE/clang/bin:${PATH}
-
-          # LLVM-ready args only, no GCC CROSS_COMPILE
-          args="ARCH=arm64 \
-                O=../out \
-                ${{ env.BUILD_ARGS }} \
-                CC=clang \
-                LD=ld.lld \
-                CLANG_TRIPLE=aarch64-linux-gnu- \
-                CROSS_COMPILE= \
-                CROSS_COMPILE_ARM32="
-
+          args="                  ARCH=arm64 \
+                                  O=../out \
+                                  ${{ env.BUILD_ARGS }} \
+                                  CLANG_TRIPLE=aarch64-linux-gnu- \
+                                  CROSS_COMPILE=$GITHUB_WORKSPACE/aarch64-linux-android-4.9/bin/aarch64-linux-android- \
+                                  CROSS_COMPILE_ARM32=$GITHUB_WORKSPACE/arm-linux-androideabi-4.9/bin/arm-linux-androideabi- "
           cd kernel-source
+          git submodule update --init --recursive
           make ${args} ${{ env.KERNEL_CONFIG }}
+
+          scripts/config --file ../out/.config --disable DEBUG_FS
+          scripts/config --file ../out/.config --disable CC_STACKPROTECTOR
+          scripts/config --file ../out/.config --disable STACKPROTECTOR
+          scripts/config --file ../out/.config --disable STACKPROTECTOR_STRONG
+          sed -i 's/CONFIG_TOUCHSCREEN_ST_FTS_V521_SPI=m/CONFIG_TOUCHSCREEN_ST_FTS_V521_SPI=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_I2C=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_I2C=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_LOADER=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_LOADER=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_DEVICE_ACCESS=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_DEVICE_ACCESS=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=m/CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=y/' ../out/.config
+          sed -i 's/CONFIG_INPUT_QCOM_HV_HAPTICS=m/CONFIG_INPUT_QCOM_HV_HAPTICS=y/' ../out/.config
+          sed -i 's/CONFIG_FINGERPRINT_FPC_TEE=m/CONFIG_FINGERPRINT_FPC_TEE=y/' ../out/.config
+          sed -i 's/CONFIG_FINGERPRINT_GOODIX_TEE=m/CONFIG_FINGERPRINT_GOODIX_TEE=y/' ../out/.config
+          sed -i 's/CONFIG_LOCALVERSION="-qgki"/CONFIG_LOCALVERSION="-PhoeniX-KSU"/' ../out/.config
+          if ! grep -q "CONFIG_MACH_XIAOMI_VILI=y" ../out/.config; then
+           echo "CONFIG_MACH_XIAOMI_VILI=y" >> ../out/.config
+          fi
+          make ${args} olddefconfig
+
           make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args}
+
 
       - name: Package kernel
         run: |
