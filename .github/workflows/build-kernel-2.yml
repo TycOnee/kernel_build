@@ -30,9 +30,17 @@ jobs:
       - name: Pull kernel source
         run: |
           git clone --depth=1 ${{ env.KERNEL_SOURCE }} -b ${{ env.KERNEL_SOURCE_BRANCH }} kernel-source
+          
       - name: Patch kernel source (fix printf)
         run: |
           sed -i 's/printf(/printk(KERN_INFO /g' kernel-source/kernel/async.c
+
+      - name: Setup KernelSU
+        run: |
+          # Remove any old KernelSU folders
+          rm -rf kernel-source/drivers/kernelsu
+          rm -rf ~/KernelSU
+          curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
 
       - name: Build kernel
         run: |
