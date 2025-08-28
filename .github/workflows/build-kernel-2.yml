@@ -37,7 +37,6 @@ jobs:
 
       - name: Setup KernelSU
         run: |
-          # Remove any old KernelSU folders
           rm -rf kernel-source/drivers/kernelsu
           rm -rf ~/KernelSU
           curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.9.5
