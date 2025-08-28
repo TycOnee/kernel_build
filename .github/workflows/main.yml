@@ -31,8 +31,8 @@ jobs:
 
       - name: Build kernel
         run: |
-          export KBUILD_BUILD_USER="zclkkk"
-          export KBUILD_BUILD_HOST="workspace"
+          export KBUILD_BUILD_USER="TycOnee"
+          export KBUILD_BUILD_HOST="PhoeniXLab"
           export PATH=$GITHUB_WORKSPACE/clang/bin:${PATH}
           args="                  ARCH=arm64 \
                                   O=../out \
@@ -55,6 +55,7 @@ jobs:
           sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_DEVICE_ACCESS=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_DEVICE_ACCESS=y/' ../out/.config
           sed -i 's/CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=m/CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=y/' ../out/.config
           sed -i 's/CONFIG_INPUT_QCOM_HV_HAPTICS=m/CONFIG_INPUT_QCOM_HV_HAPTICS=y/' ../out/.config
+          sed -i 's/CONFIG_LOCALVERSION="-qgki"/CONFIG_LOCALVERSION="-PhoeniX-KSU"/' ../out/.config
           make ${args} olddefconfig
 
           make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args}
