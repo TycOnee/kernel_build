@@ -48,6 +48,13 @@ jobs:
           scripts/config --file ../out/.config --disable CC_STACKPROTECTOR
           scripts/config --file ../out/.config --disable STACKPROTECTOR
           scripts/config --file ../out/.config --disable STACKPROTECTOR_STRONG
+          sed -i 's/CONFIG_TOUCHSCREEN_ST_FTS_V521_SPI=m/CONFIG_TOUCHSCREEN_ST_FTS_V521_SPI=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_I2C=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_I2C=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_LOADER=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_LOADER=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_DEVICE_ACCESS=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_DEVICE_ACCESS=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=m/CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=y/' ../out/.config
+          sed -i 's/CONFIG_INPUT_QCOM_HV_HAPTICS=m/CONFIG_INPUT_QCOM_HV_HAPTICS=y/' ../out/.config
           make ${args} olddefconfig
 
           make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args}
