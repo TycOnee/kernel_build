@@ -43,9 +43,9 @@ jobs:
           
           cd kernel-source
           make ${args} ${{ env.KERNEL_CONFIG }}
-          scripts/config --disable STACKPROTECTOR
-          scripts/config --disable CC_STACKPROTECTOR
-          yes "" | make olddefconfig
+          scripts/config --file ../out/.config --disable STACKPROTECTOR
+          scripts/config --file ../out/.config --disable CC_STACKPROTECTOR
+          yes "" | make O=../out ARCH=arm64 olddefconfig
           make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args}
 
 
