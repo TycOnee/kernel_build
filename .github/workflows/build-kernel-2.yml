@@ -30,6 +30,9 @@ jobs:
       - name: Pull kernel source
         run: |
           git clone --depth=1 ${{ env.KERNEL_SOURCE }} -b ${{ env.KERNEL_SOURCE_BRANCH }} kernel-source
+      - name: Patch kernel source (fix printf)
+        run: |
+          sed -i 's/printf(/printk(KERN_INFO /g' kernel-source/kernel/async.c
 
       - name: Build kernel
         run: |
