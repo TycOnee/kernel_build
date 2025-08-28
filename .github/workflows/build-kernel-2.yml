@@ -48,7 +48,6 @@ jobs:
                 CROSS_COMPILE_ARM32="
 
           cd kernel-source
-          git submodule update --init --recursive
           make ${args} ${{ env.KERNEL_CONFIG }}
           make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args}
 
