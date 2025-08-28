@@ -26,6 +26,11 @@ jobs:
           if ! command -v python2 &>/dev/null; then
             sudo ln -sf /usr/bin/python3 /usr/bin/python2
           fi
+      - name: Patch mkdtboimg.py for Python3
+        run: |
+          sed -i '1i try:\n    xrange\nexcept NameError:\n    xrange = range\n' kernel-source/scripts/mkdtboimg.py
+          sed -i 's/\<is 0\>/== 0/' kernel-source/scripts/mkdtboimg.py
+          
 
       - name: Pull toolchain
         run: |
