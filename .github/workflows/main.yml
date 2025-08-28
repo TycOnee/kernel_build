@@ -29,8 +29,8 @@ jobs:
         run: |
           git clone --depth=1 ${{ env.KERNEL_SOURCE }} -b ${{ env.KERNEL_SOURCE_BRANCH }} kernel-source
 
-       - name: Build kernel
-         run: |
+      - name: Build kernel
+        run: |
           export KBUILD_BUILD_USER="zclkkk"
           export KBUILD_BUILD_HOST="workspace"
           export PATH=$GITHUB_WORKSPACE/clang/bin:${PATH}
@@ -44,7 +44,6 @@ jobs:
           git submodule update --init --recursive
           make ${args} ${{ env.KERNEL_CONFIG }}
 
-          # Disable problematic configs to fix kgsl_debugfs & __stack_chk_guard errors
           scripts/config --file ../out/.config --disable DEBUG_FS
           scripts/config --file ../out/.config --disable CC_STACKPROTECTOR
           scripts/config --file ../out/.config --disable STACKPROTECTOR
@@ -52,6 +51,7 @@ jobs:
           make ${args} olddefconfig
 
           make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args}
+
 
       - name: Package kernel
         run: |
