@@ -1,4 +1,4 @@
-name: DG8
+name: Build MikaKernel KSU
 
 
 on:
@@ -24,32 +24,41 @@ jobs:
           git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 aarch64-linux-android-4.9
           git clone --depth=1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 arm-linux-androideabi-4.9
           mkdir clang && curl https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android14-dev/clang-r487747c.tar.gz -RLO && tar -C clang/ -xf clang-*.tar.gz
-      
+
       - name: Pull kernel source
         run: |
           git clone --depth=1 ${{ env.KERNEL_SOURCE }} -b ${{ env.KERNEL_SOURCE_BRANCH }} kernel-source
-          
+
       - name: Build kernel
         run: |
           export KBUILD_BUILD_USER="TycOnee"
           export KBUILD_BUILD_HOST="PhoeniXLab"
           export PATH=$GITHUB_WORKSPACE/clang/bin:${PATH}
-          args="ARCH=arm64 \
-                O=../out \
-                ${{ env.BUILD_ARGS }} \
-                CLANG_TRIPLE=aarch64-linux-gnu- \
-                CROSS_COMPILE=$GITHUB_WORKSPACE/aarch64-linux-android-4.9/bin/aarch64-linux-android- \
-                CROSS_COMPILE_ARM32=$GITHUB_WORKSPACE/arm-linux-androideabi-4.9/bin/arm-linux-androideabi- "
-          
+          args="                  ARCH=arm64 \
+                                  O=../out \
+                                  ${{ env.BUILD_ARGS }} \
+                                  CLANG_TRIPLE=aarch64-linux-gnu- \
+                                  CROSS_COMPILE=$GITHUB_WORKSPACE/aarch64-linux-android-4.9/bin/aarch64-linux-android- \
+                                  CROSS_COMPILE_ARM32=$GITHUB_WORKSPACE/arm-linux-androideabi-4.9/bin/arm-linux-androideabi- "
           cd kernel-source
+          git submodule update --init --recursive
           make ${args} ${{ env.KERNEL_CONFIG }}
-          scripts/config --file ../out/.config --disable STACKPROTECTOR
+
+          scripts/config --file ../out/.config --disable DEBUG_FS
           scripts/config --file ../out/.config --disable CC_STACKPROTECTOR
-          scripts/config --file ../out/.config --disable QCOM_IPCC
+          scripts/config --file ../out/.config --disable STACKPROTECTOR
+          scripts/config --file ../out/.config --disable STACKPROTECTOR_STRONG
+          sed -i 's/CONFIG_TOUCHSCREEN_ST_FTS_V521_SPI=m/CONFIG_TOUCHSCREEN_ST_FTS_V521_SPI=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_I2C=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_I2C=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_LOADER=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_LOADER=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_DEVICE_ACCESS=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_DEVICE_ACCESS=y/' ../out/.config
+          sed -i 's/CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=m/CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=y/' ../out/.config
+          sed -i 's/CONFIG_INPUT_QCOM_HV_HAPTICS=m/CONFIG_INPUT_QCOM_HV_HAPTICS=y/' ../out/.config
+          sed -i 's/CONFIG_LOCALVERSION="-qgki"/CONFIG_LOCALVERSION="-PhoeniX-KSU"/' ../out/.config
+          make ${args} olddefconfig
 
-          yes "" | make O=../out ARCH=arm64 olddefconfig
-          make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args}
-
+          make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args} Image.gz-dtb dtbo.img
 
 
       - name: Package kernel
