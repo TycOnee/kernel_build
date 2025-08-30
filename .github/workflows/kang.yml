@@ -29,48 +29,44 @@ jobs:
         run: |
           git clone --depth=1 ${{ env.KERNEL_SOURCE }} -b ${{ env.KERNEL_SOURCE_BRANCH }} kernel-source
 
-- name: Build kernel
-   run: |
-    export KBUILD_BUILD_USER="TycOnee"
-    export KBUILD_BUILD_HOST="PhoeniXLab"
-    export PATH=$GITHUB_WORKSPACE/clang/bin:${PATH}
-    args="                  ARCH=arm64 \
+      - name: Build kernel
+        run: |
+         export KBUILD_BUILD_USER="TycOnee"
+         export KBUILD_BUILD_HOST="PhoeniXLab"
+         export PATH=$GITHUB_WORKSPACE/clang/bin:${PATH}
+          args="                  ARCH=arm64 \
                             O=../out \
                             ${{ env.BUILD_ARGS }} \
                             CLANG_TRIPLE=aarch64-linux-gnu- \
                             CROSS_COMPILE=$GITHUB_WORKSPACE/aarch64-linux-android-4.9/bin/aarch64-linux-android- \
                             CROSS_COMPILE_ARM32=$GITHUB_WORKSPACE/arm-linux-androideabi-4.9/bin/arm-linux-androideabi- "
-    cd kernel-source
-    git submodule update --init --recursive
-    make ${args} ${{ env.KERNEL_CONFIG }}
+         cd kernel-source
+         git submodule update --init --recursive
+         make ${args} ${{ env.KERNEL_CONFIG }}
 
-    scripts/config --file ../out/.config --disable DEBUG_FS
-    scripts/config --file ../out/.config --disable CC_STACKPROTECTOR
-    scripts/config --file ../out/.config --disable STACKPROTECTOR
-    scripts/config --file ../out/.config --disable STACKPROTECTOR_STRONG
-    sed -i 's/CONFIG_TOUCHSCREEN_ST_FTS_V521_SPI=m/CONFIG_TOUCHSCREEN_ST_FTS_V521_SPI=y/' ../out/.config
-    sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5=y/' ../out/.config
-    sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_I2C=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_I2C=y/' ../out/.config
-    sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_LOADER=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_LOADER=y/' ../out/.config
-    sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_DEVICE_ACCESS=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_DEVICE_ACCESS=y/' ../out/.config
-    sed -i 's/CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=m/CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=y/' ../out/.config
-    sed -i 's/CONFIG_INPUT_QCOM_HV_HAPTICS=m/CONFIG_INPUT_QCOM_HV_HAPTICS=y/' ../out/.config
-    sed -i 's/CONFIG_LOCALVERSION="-qgki"/CONFIG_LOCALVERSION="-PhoeniX-KSU"/' ../out/.config
+         scripts/config --file ../out/.config --disable DEBUG_FS
+         scripts/config --file ../out/.config --disable CC_STACKPROTECTOR
+         scripts/config --file ../out/.config --disable STACKPROTECTOR
+         scripts/config --file ../out/.config --disable STACKPROTECTOR_STRONG
+         sed -i 's/CONFIG_TOUCHSCREEN_ST_FTS_V521_SPI=m/CONFIG_TOUCHSCREEN_ST_FTS_V521_SPI=y/' ../out/.config
+         sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5=y/' ../out/.config
+         sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_I2C=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_I2C=y/' ../out/.config
+         sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_LOADER=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_LOADER=y/' ../out/.config
+         sed -i 's/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_DEVICE_ACCESS=m/CONFIG_TOUCHSCREEN_CYPRESS_CYTTSP5_DEVICE_ACCESS=y/' ../out/.config
+         sed -i 's/CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=m/CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE=y/' ../out/.config
+         sed -i 's/CONFIG_INPUT_QCOM_HV_HAPTICS=m/CONFIG_INPUT_QCOM_HV_HAPTICS=y/' ../out/.config
+         sed -i 's/CONFIG_LOCALVERSION="-qgki"/CONFIG_LOCALVERSION="-PhoeniX-KSU"/' ../out/.config
+         sed -i 's/# CONFIG_FINGERPRINT_FPC_TEE is not set/CONFIG_FINGERPRINT_FPC_TEE=y/' ../out/.config
+         sed -i 's/# CONFIG_FINGERPRINT_GOODIX_TEE is not set/CONFIG_FINGERPRINT_GOODIX_TEE=y/' ../out/.config
+         sed -i 's/# CONFIG_INPUT_AW8697_HAPTIC is not set/CONFIG_INPUT_AW8697_HAPTIC=y/' ../out/.config
+         sed -i 's/# CONFIG_MACH_XIAOMI_VILI is not set/CONFIG_MACH_XIAOMI_VILI=y/' ../out/.config
+         sed -i 's/# CONFIG_QTI_BATTERY_CHARGER is not set/CONFIG_QTI_BATTERY_CHARGER_ODIN=y/' ../out/.config
+         sed -i 's/# CONFIG_BQ_FUEL_GAUGE is not set/CONFIG_BQ_FUEL_GAUGE=y/' ../out/.config
+         sed -i 's/# CONFIG_MIUS_PROXIMITY is not set/CONFIG_MIUS_PROXIMITY=y/' ../out/.config
+         sed -i 's/# CONFIG_CNSS_QCA6490 is not set/CONFIG_CNSS_QCA6490=y/' ../out/.config
 
-    # Add the missing configurations (these were the ones you listed)
-    sed -i 's/# CONFIG_FINGERPRINT_FPC_TEE is not set/CONFIG_FINGERPRINT_FPC_TEE=y/' ../out/.config
-    sed -i 's/# CONFIG_FINGERPRINT_GOODIX_TEE is not set/CONFIG_FINGERPRINT_GOODIX_TEE=y/' ../out/.config
-    sed -i 's/# CONFIG_INPUT_AW8697_HAPTIC is not set/CONFIG_INPUT_AW8697_HAPTIC=y/' ../out/.config
-    sed -i 's/# CONFIG_MACH_XIAOMI_VILI is not set/CONFIG_MACH_XIAOMI_VILI=y/' ../out/.config
-    sed -i 's/# CONFIG_QTI_BATTERY_CHARGER is not set/CONFIG_QTI_BATTERY_CHARGER_ODIN=y/' ../out/.config
-    sed -i 's/# CONFIG_BQ_FUEL_GAUGE is not set/CONFIG_BQ_FUEL_GAUGE=y/' ../out/.config
-    sed -i 's/# CONFIG_MIUS_PROXIMITY is not set/CONFIG_MIUS_PROXIMITY=y/' ../out/.config
-    sed -i 's/# CONFIG_CNSS_QCA6490 is not set/CONFIG_CNSS_QCA6490=y/' ../out/.config
-
-    make ${args} olddefconfig
-
-    # Build dtbs (device trees) only
-    make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args} dtbs
+         make ${args} olddefconfig
+         make -j$(($(getconf _NPROCESSORS_ONLN) * 2)) ${args} dtbs
 
       - name: Package kernel
         run: |
