@@ -29,9 +29,8 @@ jobs:
         run: |
           git clone --depth=1 ${{ env.KERNEL_SOURCE }} -b ${{ env.KERNEL_SOURCE_BRANCH }} kernel-source
 
-      - name: Build kernel
-      - name: Build kernel
-  run: |
+     - name: Build kernel
+   run: |
     export KBUILD_BUILD_USER="TycOnee"
     export KBUILD_BUILD_HOST="PhoeniXLab"
     export PATH=$GITHUB_WORKSPACE/clang/bin:${PATH}
